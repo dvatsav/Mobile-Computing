@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">A1_2016030</string>
+    <string name="name">Name</string>
+    <string name="rollNumber">Roll Number</string>
+    <string name="branch">Branch</string>
+    <string name="courseOne">Course 1</string>
+    <string name="courseTwo">Course 2</string>
+    <string name="courseThree">Course 3</string>
+    <string name="courseFour">Course 4</string>
+    <string name="userDetails">User Details</string>
+    <string name="nameHint">Enter your Name</string>
+    <string name="rollHint">Enter your Roll Number</string>
+    <string name="courseHint">Enter the Course Name</string>
+    <string name="branchHint">Enter your Branch</string>
+    <string name="clearButton">Clear</string>
+    <string name="submitButton">Submit</string>
+</resources>
