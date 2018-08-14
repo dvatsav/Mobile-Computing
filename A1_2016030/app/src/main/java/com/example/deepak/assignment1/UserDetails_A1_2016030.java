@@ -43,14 +43,21 @@ public class UserDetails_A1_2016030 extends AppCompatActivity {
         setContentView(R.layout.activity_user_details);
         Bundle bundle = getIntent().getExtras();
         initializeElements();
-        unpackBundle(bundle);
-        if (!prevStop) {
-            Log.i(TAG, "State of Activity - UserDetails changed: Activity Launched and started with onCreate");
-            Toast.makeText(this, "State of Activity - UserDetails changed: Activity Launched and started with onCreate", Toast.LENGTH_SHORT).show();
-        } else {
+        if (bundle != null)
+            unpackBundle(bundle);
+        if (prevStop) {
             Log.i(TAG, "State of Activity - UserDetails changed: changed from Stopped to Create");
             Toast.makeText(this, "State of Activity - UserDetails changed: changed from Stopped to Create", Toast.LENGTH_SHORT).show();
             prevStop = false;
+        } else if (prevPause){
+            Log.i(TAG, "State of Activity - UserDetails changed: changed from Paused to Create");
+            Toast.makeText(this, "State of Activity - UserDetails changed: changed from Paused to Create", Toast.LENGTH_SHORT).show();
+            prevPause = false;
+
+        } else {
+            Log.i(TAG, "State of Activity - UserDetails changed: Activity Launched and started with onCreate");
+            Toast.makeText(this, "State of Activity - UserDetails changed: Activity Launched and started with onCreate", Toast.LENGTH_SHORT).show();
+
         }
         prevCreate = true;
     }
@@ -92,6 +99,7 @@ public class UserDetails_A1_2016030 extends AppCompatActivity {
 
         Log.i(TAG, "State of Activity - UserDetails changed: changed from Activity Running to Pause");
         Toast.makeText(this, "State of Activity - UserDetails changed: changed from Activity Running to Pause", Toast.LENGTH_SHORT).show();
+        prevPause = true;
     }
 
     @Override
@@ -110,6 +118,7 @@ public class UserDetails_A1_2016030 extends AppCompatActivity {
         Log.i(TAG, "State of Activity - UserDetails changed: changed from Stop to Restart");
         Toast.makeText(this, "State of Activity - UserDetails changed: changed from Stop to Restart", Toast.LENGTH_SHORT).show();
         prevRestart = true;
+        prevStop = false;
     }
 
     @Override
@@ -118,5 +127,6 @@ public class UserDetails_A1_2016030 extends AppCompatActivity {
 
         Log.i(TAG, "State of Activity - UserDetails changed: changed from Stop to Destroy");
         Toast.makeText(this, "State of Activity - UserDetails changed: changed from Stop to Destroy", Toast.LENGTH_SHORT).show();
+        prevStop = false;
     }
 }

@@ -76,13 +76,17 @@ public class Registration_A1_2016030 extends AppCompatActivity {
                 clearAll();
             }
         });
-        if (!prevStop) {
-            Log.i(TAG, "State of Activity - Registration changed: Activity Launched and started with onCreate");
-            Toast.makeText(this, "State of Activity - Registration changed: Activity Launched and started with onCreate", Toast.LENGTH_SHORT).show();
-        } else {
+        if (prevStop) {
             Log.i(TAG, "State of Activity - Registration changed: changed from Stopped to Create");
             Toast.makeText(this, "State of Activity - Registration changed: changed from Stopped to Create", Toast.LENGTH_SHORT).show();
             prevStop = false;
+        } else if (prevPause){
+            Log.i(TAG, "State of Activity - Registration changed: changed from Paused to Create");
+            Toast.makeText(this, "State of Activity - Registration changed: changed from Paused to Create", Toast.LENGTH_SHORT).show();
+            prevPause = false;
+        } else {
+            Log.i(TAG, "State of Activity - Registration changed: Activity Launched and started with onCreate");
+            Toast.makeText(this, "State of Activity - Registration changed: Activity Launched and started with onCreate", Toast.LENGTH_SHORT).show();
         }
         prevCreate = true;
     }
@@ -124,6 +128,7 @@ public class Registration_A1_2016030 extends AppCompatActivity {
 
         Log.i(TAG, "State of Activity - Registration changed: changed from Activity Running to Pause");
         Toast.makeText(this, "State of Activity - Registration changed: changed from Activity Running to Pause", Toast.LENGTH_SHORT).show();
+        prevPause = true;
     }
 
     @Override
@@ -140,7 +145,8 @@ public class Registration_A1_2016030 extends AppCompatActivity {
         super.onRestart();
 
         Log.i(TAG, "State of Activity - Registration changed: changed from Stop to Restart");
-        Toast.makeText(this, "State of Activity - Registration0 changed: changed from Stop to Restart", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "State of Activity - Registration changed: changed from Stop to Restart", Toast.LENGTH_SHORT).show();
+        prevStop = false;
         prevRestart = true;
     }
 
@@ -150,5 +156,6 @@ public class Registration_A1_2016030 extends AppCompatActivity {
 
         Log.i(TAG, "State of Activity - Registration changed: changed from Stop to Destroy");
         Toast.makeText(this, "State of Activity - Registration changed: changed from Stop to Destroy", Toast.LENGTH_SHORT).show();
+        prevStop = false;
     }
 }
