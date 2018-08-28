@@ -105,6 +105,7 @@ public class MainActivity_A2_2016030 extends AppCompatActivity implements MediaC
         stopService(playIntent);
         musicService = null;
         controller.hide();
+        controller = null;
         super.onDestroy();
     }
 
