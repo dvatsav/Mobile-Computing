@@ -7,12 +7,15 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.util.Log;
+import android.widget.ProgressBar;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 
 public class MusicDownloadService_A2_2016030 extends IntentService {
 
@@ -32,28 +35,35 @@ public class MusicDownloadService_A2_2016030 extends IntentService {
         boolean internet = true;
         if (activeNet == null || !activeNet.isConnected())
             internet = false;
-        String filename = "until_you_were_gone.mp3";
-        String urlPath = "https://dl45.y2mate.com/youtube/mp3/7/y2mate.com%20-%20the_chainsmokers_tritonal_until_you_were_gone_official_video_ft_emily_warren_iPAac-0IUKQ.mp3";
+        String filename = "s1.mp3";
+        String urlPath = "http://faculty.iiitd.ac.in/~mukulika/s1.mp3";
         Intent in = new Intent(ACTION);
         if (!internet) {
-            in.putExtra("resultCode", Activity.RESULT_CANCELED);
+            in.putExtra("resultCode", 4);
             sendBroadcast(in);
             return;
         }
         FileOutputStream outputStream;
         InputStream stream = null;
-
+        HttpURLConnection connection;
 
         try {
             outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
             URL url = new URL(urlPath);
-            stream = url.openConnection().getInputStream();
-            InputStreamReader reader = new InputStreamReader(stream);
-            int next = -1;
-            while ((next = reader.read()) != -1) {
-                outputStream.write(next);
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+            connection.setDoOutput(true);
+            connection.connect();
+            stream = connection.getInputStream();
+            int fileLength = connection.getContentLength();
+            byte data[] = new byte[1024];
+            int bufferLength = 0;
+            while ((bufferLength = stream.read(data)) > 0) {
+                outputStream.write(data, 0, bufferLength);
             }
+            outputStream.flush();
             outputStream.close();
+            stream.close();
             result = Activity.RESULT_OK;
             in.putExtra("resultCode", result);
             Log.i("Download:", "Successful");

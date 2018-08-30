@@ -1,11 +1,14 @@
 package com.example.deepak.a2_2016030;
 
+import android.app.DownloadManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.net.Uri;
+import android.os.Environment;
 import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -16,13 +19,18 @@ import android.view.ViewTreeObserver;
 import android.widget.MediaController;
 import android.widget.Toast;
 
+import java.io.File;
+import java.net.URI;
+
+import static android.os.Environment.DIRECTORY_DOWNLOADS;
+
 public class MainActivity_A2_2016030 extends AppCompatActivity implements MediaController.MediaPlayerControl{
 
     private Intent playIntent;
     protected static MusicPlayerService_A2_2016030 musicService;
     private boolean bound;
     protected MediaController controller;
-
+    private DownloadManager downloadManager;
 
     private ServiceConnection musicPlayerConnection = new ServiceConnection() {
         @Override
@@ -45,9 +53,9 @@ public class MainActivity_A2_2016030 extends AppCompatActivity implements MediaC
             String resultValue;
             if (resultCode == RESULT_OK) {
                 resultValue = "Song Successfully Downloaded";
-            } else {
-                resultValue = "Unable to Download Song, Maybe no internet";
-            }
+            } else if (resultCode == RESULT_CANCELED){
+                resultValue = "Unable to Download Song";
+            } else resultValue = "No internet";
             Toast.makeText(MainActivity_A2_2016030.this, resultValue, Toast.LENGTH_LONG).show();
         }
     };
@@ -58,14 +66,7 @@ public class MainActivity_A2_2016030 extends AppCompatActivity implements MediaC
         setContentView(R.layout.activity_main);
         MusicListFragment_A2_2016030 musicList = new MusicListFragment_A2_2016030();
         getSupportFragmentManager().beginTransaction().add(R.id.container, musicList).commit();
-        View root = findViewById(R.id.container);
-        ViewTreeObserver vto = root.getViewTreeObserver();
-        vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                setController();
-            }
-        });
+        //downloadManager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
 
     }
 
@@ -84,18 +85,34 @@ public class MainActivity_A2_2016030 extends AppCompatActivity implements MediaC
         super.onResume();
         IntentFilter filter = new IntentFilter(MusicDownloadService_A2_2016030.ACTION);
         registerReceiver(receiver, filter);
+        View root = findViewById(R.id.container);
+        ViewTreeObserver vto = root.getViewTreeObserver();
+        vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                setController();
+            }
+        });
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         unregisterReceiver(receiver);
+        if (controller != null) {
+            controller.hide();
+            controller = null;
+        }
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        controller.hide();
+        if (controller != null) {
+            controller.hide();
+            controller = null;
+        }
+
     }
 
     @Override
@@ -104,21 +121,27 @@ public class MainActivity_A2_2016030 extends AppCompatActivity implements MediaC
             unbindService(musicPlayerConnection);
         stopService(playIntent);
         musicService = null;
-        controller.hide();
-        controller = null;
+        if (controller != null) {
+            controller.hide();
+            controller = null;
+        }
         super.onDestroy();
     }
 
+    /*
     @Override
     public void onBackPressed() {
         if (bound)
             unbindService(musicPlayerConnection);
         stopService(playIntent);
-        controller.hide();
+        if (controller != null) {
+            controller.hide();
+            controller = null;
+        }
         musicService = null;
         super.onBackPressed();
     }
-
+    */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu, menu);
@@ -130,6 +153,16 @@ public class MainActivity_A2_2016030 extends AppCompatActivity implements MediaC
         if (item.getItemId() == R.id.download) {
             Intent intent = new Intent(this, MusicDownloadService_A2_2016030.class);
             startService(intent);
+            /*
+            Uri uri = Uri.parse("http://faculty.iiitd.ac.in/~mukulika/s1.mp3");
+            DownloadManager.Request request = new DownloadManager.Request(uri);
+            request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI);
+            request.setTitle("Downloading Song");
+            request.setDescription("Downloading s1.mp3");
+            request.setVisibleInDownloadsUi(true);
+            request.setDestinationInExternalFilesDir(this, DIRECTORY_DOWNLOADS, "s1.mp3");
+            downloadManager.enqueue(request);
+            */
         } else {
             return super.onOptionsItemSelected(item);
         }
