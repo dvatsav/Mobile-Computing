@@ -7,20 +7,18 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.util.Log;
-import android.widget.ProgressBar;
-
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
+
 
 public class MusicDownloadService_A2_2016030 extends IntentService {
 
     private int result = Activity.RESULT_CANCELED;
     public static final String ACTION = "come.example.deepak.a2_2016030.MusicDownloadService";
+    public static int downloadedSongCount = 0;
 
     public MusicDownloadService_A2_2016030() {
         super("Music Download Service");
@@ -55,7 +53,6 @@ public class MusicDownloadService_A2_2016030 extends IntentService {
             connection.setDoOutput(true);
             connection.connect();
             stream = connection.getInputStream();
-            int fileLength = connection.getContentLength();
             byte data[] = new byte[1024];
             int bufferLength = 0;
             while ((bufferLength = stream.read(data)) > 0) {
@@ -67,6 +64,7 @@ public class MusicDownloadService_A2_2016030 extends IntentService {
             result = Activity.RESULT_OK;
             in.putExtra("resultCode", result);
             Log.i("Download:", "Successful");
+            downloadedSongCount++;
         } catch (IOException i) {
             in.putExtra("resultCode", Activity.RESULT_CANCELED);
             Log.i("Download:", "Failed");

@@ -3,6 +3,7 @@ package com.example.deepak.a2_2016030;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -10,8 +11,6 @@ import android.net.Uri;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.PowerManager;
-
-import java.lang.reflect.Field;
 
 public class MusicPlayerService_A2_2016030 extends Service implements MediaPlayer.OnPreparedListener,
                                                     MediaPlayer.OnErrorListener,
@@ -61,9 +60,10 @@ public class MusicPlayerService_A2_2016030 extends Service implements MediaPlaye
     @Override
     public void onPrepared(MediaPlayer mp) {
         mp.start();
+
         Intent notifIntent = new Intent(this, MainActivity_A2_2016030.class);
         notifIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent pendInt = PendingIntent.getActivity(this, 0,
+        PendingIntent pendInt = PendingIntent.getActivity(getApplicationContext(), 0,
                 notifIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         Notification.Builder builder = new Notification.Builder(this);
@@ -83,12 +83,13 @@ public class MusicPlayerService_A2_2016030 extends Service implements MediaPlaye
         stopForeground(true);
     }
 
-    public void playSong(Field field, int songNumber, int listSize) {
+    public void playSong(Uri songUri, int songNumber, int listSize) {
         musicPlayer.reset();
         this.songNumber = songNumber;
         this.listSize = listSize;
-        Uri songUri = Uri.parse("android.resource://" + getPackageName() + "/raw/" + field.getName());
-        songTitle = field.getName().replace("_", " ");
+
+        songTitle = MusicListFragment_A2_2016030.songNames.get(songNumber);
+
         try {
             musicPlayer.setDataSource(getApplicationContext(), songUri);
         } catch (Exception e) {
@@ -133,7 +134,13 @@ public class MusicPlayerService_A2_2016030 extends Service implements MediaPlaye
         if(songNumber < 0) {
             songNumber = listSize - 1;
         }
-        playSong(R.raw.class.getFields()[songNumber], songNumber, listSize);
+        Uri songUri;
+        if (songNumber < MusicListFragment_A2_2016030.rawSongCount) {
+            songUri = Uri.parse("android.resource://" + getPackageName() + "/raw/" + MusicListFragment_A2_2016030.songNames.get(songNumber).replace(" ", "_"));
+        } else {
+            songUri = Uri.parse("android.resource://" + getPackageName() + "/raw/" + MusicListFragment_A2_2016030.songNames.get(MusicListFragment_A2_2016030.rawSongCount - 1).replace(" ", "_"));
+        }
+        playSong(songUri, songNumber, listSize);
     }
 
     public void playNext(){
@@ -141,6 +148,12 @@ public class MusicPlayerService_A2_2016030 extends Service implements MediaPlaye
         if (songNumber >= listSize) {
             songNumber = 0;
         }
-        playSong(R.raw.class.getFields()[songNumber], songNumber, listSize);
+        Uri songUri;
+        if (songNumber < MusicListFragment_A2_2016030.rawSongCount) {
+            songUri = Uri.parse("android.resource://" + getPackageName() + "/raw/" + MusicListFragment_A2_2016030.songNames.get(songNumber).replace(" ", "_"));
+        } else {
+            songUri = Uri.parse("android.resource://" + getPackageName() + "/raw/" + MusicListFragment_A2_2016030.songNames.get(0).replace(" ", "_"));
+        }
+        playSong(songUri, songNumber, listSize);
     }
 }
