@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">QuizApp</string>
+    <string name="make_question">Make a question</string>
+    <string name="answer_question">Answer a question</string>
+    <string name="question_text">Enter your Question below</string>
+    <string name="enter_question_text_view">Enter your Question Below</string>
+    <string name="enter_your_question_hint">Enter your question here</string>
+    <string name="enter_correct_answer_text">Enter the correct answer</string>
+    <string name="True">True</string>
+    <string name="False">False</string>
+    <string name="submit">Submit</string>
+    <string name="question">Question</string>
+    <string name="main_menu">Main Menu</string>
+    <string name="save">Save</string>
+    <string name="mod_question">Question-></string>
+    <string name="mod_answer">Answer-></string>
+
+</resources>
