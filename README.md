@@ -1,5 +1,5 @@
-# iiitd-m2018-cse535: Mobile-Computing
-5th Semester Course at IIIT, Delhi
+# cse535@IIIT-D: Mobile-Computing
+Computer Science Elective at IIIT-Delhi
 
 # Assignment 1
 Make a registration form and switch activities to display details. Also display lifecycle activities
