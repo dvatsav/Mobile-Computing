@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -116,9 +118,20 @@ public class A3_2016030_QuestionListFragment extends Fragment {
                     }
                     outputStream.close();
                     Toast.makeText(getActivity(), "Successfully wrote data to csv file", Toast.LENGTH_SHORT).show();
-                    progressBar.setVisibility(View.VISIBLE);
-                    progressBar.setProgress(0);
-                    new UploadFile().execute();
+                    ConnectivityManager cm = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+                    NetworkInfo activeNet = cm.getActiveNetworkInfo();
+                    boolean internet = true;
+                    if (activeNet == null || !activeNet.isConnected())
+                        internet = false;
+                    System.out.println(internet);
+                    if (internet == false) {
+                        Toast.makeText(getActivity(), "No internet Connection", Toast.LENGTH_SHORT).show();
+                    } else {
+                        progressBar.setVisibility(View.VISIBLE);
+                        progressBar.setProgress(0);
+                        new UploadFile().execute();
+                    }
+
                 } catch (Exception e) {
                     e.printStackTrace();
                     Toast.makeText(getActivity(), "Could not write to CSV file", Toast.LENGTH_SHORT).show();
@@ -212,12 +225,20 @@ public class A3_2016030_QuestionListFragment extends Fragment {
     }
 
     private class UploadFile extends AsyncTask<Void, Integer, String> {
+
+        boolean internet;
+
         protected void onPreExecute() {
-            ;
+            ConnectivityManager cm = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo activeNet = cm.getActiveNetworkInfo();
+            internet = true;
+            if (activeNet == null || !activeNet.isConnected())
+                internet = false;
         }
 
         @Override
         protected String doInBackground(Void... params) {
+
             HttpURLConnection httpURLConnection = null;
             DataOutputStream outputStream = null;
             FileInputStream fileInputStream = null;
@@ -283,11 +304,14 @@ public class A3_2016030_QuestionListFragment extends Fragment {
                 e.printStackTrace();
             }
             return null;
+
         }
 
         @Override
         protected void onPostExecute(String result) {
+
             progressBar.setVisibility(View.GONE);
+
         }
 
         @Override
