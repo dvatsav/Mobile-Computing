@@ -251,7 +251,7 @@ public class A3_2016030_QuestionListFragment extends Fragment {
 
                 fileInputStream = new FileInputStream(file);
 
-                URL url = new URL("http://192.168.65.164/upload.php");
+                URL url = new URL("http://192.168.59.24/upload.php");
                 httpURLConnection = (HttpURLConnection)url.openConnection();
                 httpURLConnection.setUseCaches(false);
                 httpURLConnection.setDoOutput(true);

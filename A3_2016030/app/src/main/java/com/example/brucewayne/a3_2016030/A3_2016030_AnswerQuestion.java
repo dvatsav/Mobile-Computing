@@ -14,7 +14,7 @@ public class A3_2016030_AnswerQuestion extends AppCompatActivity {
         Fragment fragment = new A3_2016030_QuestionListFragment();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.fragment_container, fragment);
-        transaction.addToBackStack(null);
+        //transaction.addToBackStack(null);
         transaction.commit();
     }
 
