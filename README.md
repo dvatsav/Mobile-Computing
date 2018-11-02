@@ -9,3 +9,6 @@ Make a music player app that plays a song as a foreground service, and can downl
 
 # Assignment 3
 Make a quiz app that uses Recycler Views, upload database in csv form to a webserver on submission.
+
+# Assignment 3 
+Read Sensor data and print. Also store in a database. Detect shaking as well. 
