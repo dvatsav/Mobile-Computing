@@ -139,13 +139,14 @@ public class A4_2016030_Homepage extends AppCompatActivity {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
 
-                    if (ActivityCompat.checkSelfPermission(A4_2016030_Homepage.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(A4_2016030_Homepage.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                        ActivityCompat.requestPermissions((Activity) A4_2016030_Homepage.this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 101);
-                    }
-                    mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME_GPS, MIN_DIST_GPS, gpsSensor);
+                    gpsActive = true;
+                    //if (ActivityCompat.checkSelfPermission(A4_2016030_Homepage.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(A4_2016030_Homepage.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    //    ActivityCompat.requestPermissions((Activity) A4_2016030_Homepage.this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 101);
+                    //}
+                    //mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME_GPS, MIN_DIST_GPS, gpsSensor);
                 } else {
-
-                    mLocationManager.removeUpdates(gpsSensor);
+                    gpsActive = false;
+                    //mLocationManager.removeUpdates(gpsSensor);
                 }
             }
         });
@@ -154,9 +155,11 @@ public class A4_2016030_Homepage extends AppCompatActivity {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    mSensorManager.registerListener(proximitySensor, mProximity, SensorManager.SENSOR_DELAY_NORMAL);
+                    proximityActive = true;
+                    //mSensorManager.registerListener(proximitySensor, mProximity, SensorManager.SENSOR_DELAY_NORMAL);
                 } else {
-                    mSensorManager.unregisterListener(proximitySensor);
+                    proximityActive = false;
+                    //mSensorManager.unregisterListener(proximitySensor);
                 }
             }
         });
@@ -322,29 +325,31 @@ public class A4_2016030_Homepage extends AppCompatActivity {
         @Override
         public void onSensorChanged(SensorEvent event) {
 
+            if (proximityActive) {
+                A4_2016030_DbManagement dbHelper = new A4_2016030_DbManagement(A4_2016030_Homepage.this);
+                SQLiteDatabase wdb = dbHelper.getWritableDatabase();
+                ContentValues values = new ContentValues();
+                float distance = event.values[0];
+                String display = Float.toString(distance);
+                proximityValues.setText(display);
+                if (distance == 0) {
+                    if (lastPitch < -45 && lastPitch < 135) {
+                        Toast.makeText(A4_2016030_Homepage.this, "Portrait mode", Toast.LENGTH_SHORT).show();
+                    } else if (lastPitch > 45 && lastPitch < 135) {
+                        Toast.makeText(A4_2016030_Homepage.this, "Reverse Portrait mode", Toast.LENGTH_SHORT).show();
+                    } else if (lastRoll > 45) {
+                        Toast.makeText(A4_2016030_Homepage.this, "Landscape mode", Toast.LENGTH_SHORT).show();
+                    } else if (lastRoll < -45) {
+                        Toast.makeText(A4_2016030_Homepage.this, "Reverse Landscape mode", Toast.LENGTH_SHORT).show();
+                    }
 
-            A4_2016030_DbManagement dbHelper = new A4_2016030_DbManagement(A4_2016030_Homepage.this);
-            SQLiteDatabase wdb = dbHelper.getWritableDatabase();
-            ContentValues values = new ContentValues();
-            float distance = event.values[0];
-            String display = Float.toString(distance);
-            proximityValues.setText(display);
-            if (distance == 0) {
-                if (lastPitch < -45 && lastPitch < 135) {
-                    Toast.makeText(A4_2016030_Homepage.this, "Portrait mode", Toast.LENGTH_SHORT).show();
-                } else if (lastPitch > 45 && lastPitch < 135) {
-                    Toast.makeText(A4_2016030_Homepage.this, "Reverse Portrait mode", Toast.LENGTH_SHORT).show();
-                } else if (lastRoll > 45) {
-                    Toast.makeText(A4_2016030_Homepage.this, "Landscape mode", Toast.LENGTH_SHORT).show();
-                } else if (lastRoll < -45) {
-                    Toast.makeText(A4_2016030_Homepage.this, "Reverse Landscape mode", Toast.LENGTH_SHORT).show();
                 }
-                
+                values.put("DISTANCE_FROM_OBJECT", Float.toString(distance));
+                values.put("TIMESTAMP", Long.toString(event.timestamp));
+                wdb.insert(A4_2016030_DbManagement.TABLE_NAME_S5, null, values);
+                wdb.close();
             }
-            values.put("DISTANCE_FROM_OBJECT", Float.toString(distance));
-            values.put("TIMESTAMP", Long.toString(event.timestamp));
-            wdb.insert(A4_2016030_DbManagement.TABLE_NAME_S5, null, values);
-            wdb.close();
+
 
         }
 
@@ -359,22 +364,25 @@ public class A4_2016030_Homepage extends AppCompatActivity {
         @Override
         public void onLocationChanged(Location location) {
 
-            A4_2016030_DbManagement dbHelper = new A4_2016030_DbManagement(A4_2016030_Homepage.this);
-            SQLiteDatabase wdb = dbHelper.getWritableDatabase();
-            ContentValues values = new ContentValues();
+            if (gpsActive){
+                A4_2016030_DbManagement dbHelper = new A4_2016030_DbManagement(A4_2016030_Homepage.this);
+                SQLiteDatabase wdb = dbHelper.getWritableDatabase();
+                ContentValues values = new ContentValues();
 
 
 
-            double latitude = location.getLatitude();
-            double longitude = location.getLongitude();
-            String display = Double.toString(latitude) + "; " + Double.toString(longitude);
-            gpsValues.setText(display);
+                double latitude = location.getLatitude();
+                double longitude = location.getLongitude();
+                String display = Double.toString(latitude) + "; " + Double.toString(longitude);
+                gpsValues.setText(display);
 
-            values.put("LATITUDE", latitude);
-            values.put("LONGITUDE", longitude);
-            values.put("TIMESTAMP", System.currentTimeMillis());
-            wdb.insert(A4_2016030_DbManagement.TABLE_NAME_S4, null, values);
-            wdb.close();
+                values.put("LATITUDE", latitude);
+                values.put("LONGITUDE", longitude);
+                values.put("TIMESTAMP", System.currentTimeMillis());
+                wdb.insert(A4_2016030_DbManagement.TABLE_NAME_S4, null, values);
+                wdb.close();
+            }
+
         }
 
         @Override
