@@ -29,9 +29,9 @@ import java.util.List;
 
 public class A4_2016030_Homepage extends AppCompatActivity {
 
-    private static final long MIN_DIST_GPS = 5;
-    private static final long MIN_TIME_GPS = 1000*15;
-    private static final int SHAKE_THRESHOLD = 10;
+    private static final long MIN_DIST_GPS = 2;
+    private static final long MIN_TIME_GPS = 1000*5;
+    private static final int SHAKE_THRESHOLD = 70;
 
     private SensorManager mSensorManager;
     private LocationManager mLocationManager;
@@ -40,9 +40,10 @@ public class A4_2016030_Homepage extends AppCompatActivity {
     private Sensor mProximity = null;
     private TextView accelerometerValues, gyroscopeValues, orientationValues, gpsValues, proximityValues;
     private ToggleButton accelerometerToggle, gyroscopeToggle, orientationToggle, gpsToggle, proximityToggle;
-    private boolean orientationActive = true;
+    private boolean orientationActive = true, accelerometerActive = true, gyroscopeActive = true, proximityActive = true, gpsActive = true;
     private long lastAccel = 0, lastGyro = 0, lastProx = 0, lastOrient = 0;
     private float lastX = 0, lastY = 0, lastZ = 0;
+    private double lastAzimuth = 0, lastRoll = 0, lastPitch = 0;
 
     private float[] gravity = new float[3];
     private float[] geomag = new float[3];
@@ -100,9 +101,11 @@ public class A4_2016030_Homepage extends AppCompatActivity {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    mSensorManager.registerListener(accelerometerSensor, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+                    accelerometerActive = true;
+                    //mSensorManager.registerListener(accelerometerSensor, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
                 } else {
-                    mSensorManager.unregisterListener(accelerometerSensor);
+                    accelerometerActive = false;
+                    //mSensorManager.unregisterListener(accelerometerSensor);
                 }
             }
         });
@@ -111,9 +114,11 @@ public class A4_2016030_Homepage extends AppCompatActivity {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    mSensorManager.registerListener(gyrometerSensor, mGyroscope, SensorManager.SENSOR_DELAY_NORMAL);
+                    gyroscopeActive = true;
+                    //mSensorManager.registerListener(gyrometerSensor, mGyroscope, SensorManager.SENSOR_DELAY_NORMAL);
                 } else {
-                    mSensorManager.unregisterListener(gyrometerSensor);
+                    gyroscopeActive = false;
+                    //mSensorManager.unregisterListener(gyrometerSensor);
                 }
             }
         });
@@ -133,11 +138,13 @@ public class A4_2016030_Homepage extends AppCompatActivity {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
+
                     if (ActivityCompat.checkSelfPermission(A4_2016030_Homepage.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(A4_2016030_Homepage.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                         ActivityCompat.requestPermissions((Activity) A4_2016030_Homepage.this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 101);
                     }
                     mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME_GPS, MIN_DIST_GPS, gpsSensor);
                 } else {
+
                     mLocationManager.removeUpdates(gpsSensor);
                 }
             }
@@ -170,6 +177,7 @@ public class A4_2016030_Homepage extends AppCompatActivity {
             ActivityCompat.requestPermissions((Activity) this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 101);
         }
         mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME_GPS, MIN_DIST_GPS, gpsSensor);
+
     }
 
     @Override
@@ -204,31 +212,35 @@ public class A4_2016030_Homepage extends AppCompatActivity {
                 Toast.makeText(A4_2016030_Homepage.this, "Shake Detected", Toast.LENGTH_SHORT).show();
             }
 
-
-
-            String display = Float.toString(x) + "; " + Float.toString(y) + "; " + Float.toString(z);
-            accelerometerValues.setText(display);
             gravity = event.values.clone();
-
-
 
             SQLiteDatabase wdb = dbHelper.getWritableDatabase();
             ContentValues values = new ContentValues();
-            values.put("X_ACCELERATION", Float.toString(x));
-            values.put("Y_ACCELERATION", Float.toString(y));
-            values.put("Z_ACCELERATION", Float.toString(z));
-            values.put("TIMESTAMP", Long.toString(event.timestamp));
+            String display = "";
+            if (accelerometerActive) {
+                display = Float.toString(x) + "; " + Float.toString(y) + "; " + Float.toString(z);
+                accelerometerValues.setText(display);
 
-            wdb.insert(A4_2016030_DbManagement.TABLE_NAME_S1, null, values);
-            values = new ContentValues();
+
+                values.put("X_ACCELERATION", Float.toString(x));
+                values.put("Y_ACCELERATION", Float.toString(y));
+                values.put("Z_ACCELERATION", Float.toString(z));
+                values.put("TIMESTAMP", Long.toString(event.timestamp));
+
+                wdb.insert(A4_2016030_DbManagement.TABLE_NAME_S1, null, values);
+                values = new ContentValues();
+            }
+
 
             if (gravity != null && geomag != null && orientationActive) {
                 boolean success = SensorManager.getRotationMatrix(inR, null, gravity, geomag);
                 if (success) {
                     SensorManager.getOrientation(inR, orientationVals);
-                    display = Double.toString(Math.toDegrees(orientationVals[0])) + "; " + Double.toString(Math.toDegrees(orientationVals[0])) + "; " + Double.toString(Math.toDegrees(orientationVals[0]));
+                    display = Double.toString(Math.toDegrees(orientationVals[0])) + "; " + Double.toString(Math.toDegrees(orientationVals[1])) + "; " + Double.toString(Math.toDegrees(orientationVals[2]));
                     orientationValues.setText(display);
-
+                    lastAzimuth = Math.toDegrees(orientationVals[0]);
+                    lastRoll = Math.toDegrees(orientationVals[2]);
+                    lastPitch = Math.toDegrees(orientationVals[1]);
                     values.put("AZIMUTH", Double.toString(Math.toDegrees(orientationVals[0])));
                     values.put("PITCH", Double.toString(Math.toDegrees(orientationVals[1])));
                     values.put("ROLL", Double.toString(Math.toDegrees(orientationVals[2])));
@@ -262,24 +274,32 @@ public class A4_2016030_Homepage extends AppCompatActivity {
             ContentValues values = new ContentValues();
 
 
-            String display = Float.toString(event.values[0]) + "; " + Float.toString(event.values[1]) + "; " + Float.toString(event.values[2]);
-            gyroscopeValues.setText(display);
+            String display = "";
             geomag = event.values.clone();
+            if (gyroscopeActive) {
+                display = Float.toString(event.values[0]) + "; " + Float.toString(event.values[1]) + "; " + Float.toString(event.values[2]);
+                gyroscopeValues.setText(display);
 
-            values.put("X_ACCELERATION", Float.toString(event.values[0]));
-            values.put("Y_ACCELERATION", Float.toString(event.values[1]));
-            values.put("Z_ACCELERATION", Float.toString(event.values[2]));
-            values.put("TIMESTAMP", Long.toString(event.timestamp));
 
-            wdb.insert(A4_2016030_DbManagement.TABLE_NAME_S2, null, values);
-            values = new ContentValues();
+                values.put("X_ACCELERATION", Float.toString(event.values[0]));
+                values.put("Y_ACCELERATION", Float.toString(event.values[1]));
+                values.put("Z_ACCELERATION", Float.toString(event.values[2]));
+                values.put("TIMESTAMP", Long.toString(event.timestamp));
+
+                wdb.insert(A4_2016030_DbManagement.TABLE_NAME_S2, null, values);
+                values = new ContentValues();
+            }
+
 
             if (gravity != null && geomag != null && orientationActive) {
                 boolean success = SensorManager.getRotationMatrix(inR, null, gravity, geomag);
                 if (success) {
                     SensorManager.getOrientation(inR, orientationVals);
-                    display = Double.toString(Math.toDegrees(orientationVals[0])) + "; " + Double.toString(Math.toDegrees(orientationVals[0])) + "; " + Double.toString(Math.toDegrees(orientationVals[0]));
+                    display = Double.toString(Math.toDegrees(orientationVals[0])) + "; " + Double.toString(Math.toDegrees(orientationVals[1])) + "; " + Double.toString(Math.toDegrees(orientationVals[2]));
                     orientationValues.setText(display);
+                    lastAzimuth = Math.toDegrees(orientationVals[0]);
+                    lastRoll = Math.toDegrees(orientationVals[2]);
+                    lastPitch = Math.toDegrees(orientationVals[1]);
                     values.put("AZIMUTH", Double.toString(Math.toDegrees(orientationVals[0])));
                     values.put("PITCH", Double.toString(Math.toDegrees(orientationVals[1])));
                     values.put("ROLL", Double.toString(Math.toDegrees(orientationVals[2])));
@@ -306,11 +326,22 @@ public class A4_2016030_Homepage extends AppCompatActivity {
             A4_2016030_DbManagement dbHelper = new A4_2016030_DbManagement(A4_2016030_Homepage.this);
             SQLiteDatabase wdb = dbHelper.getWritableDatabase();
             ContentValues values = new ContentValues();
-
-            String display = Float.toString(event.values[0]);
+            float distance = event.values[0];
+            String display = Float.toString(distance);
             proximityValues.setText(display);
-
-            values.put("DISTANCE_FROM_OBJECT", Float.toString(event.values[0]));
+            if (distance == 0) {
+                if (lastPitch < -45 && lastPitch < 135) {
+                    Toast.makeText(A4_2016030_Homepage.this, "Portrait mode", Toast.LENGTH_SHORT).show();
+                } else if (lastPitch > 45 && lastPitch < 135) {
+                    Toast.makeText(A4_2016030_Homepage.this, "Reverse Portrait mode", Toast.LENGTH_SHORT).show();
+                } else if (lastRoll > 45) {
+                    Toast.makeText(A4_2016030_Homepage.this, "Landscape mode", Toast.LENGTH_SHORT).show();
+                } else if (lastRoll < -45) {
+                    Toast.makeText(A4_2016030_Homepage.this, "Reverse Landscape mode", Toast.LENGTH_SHORT).show();
+                }
+                
+            }
+            values.put("DISTANCE_FROM_OBJECT", Float.toString(distance));
             values.put("TIMESTAMP", Long.toString(event.timestamp));
             wdb.insert(A4_2016030_DbManagement.TABLE_NAME_S5, null, values);
             wdb.close();
